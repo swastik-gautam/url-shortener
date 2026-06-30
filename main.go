@@ -2,15 +2,22 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 
-	"github.com/swastik-gautam/url-shortener/encoder"
+	"github.com/swastik-gautam/url-shortener/handlers"
+	"github.com/swastik-gautam/url-shortener/store"
 )
 
 func main() {
-	fmt.Println(encoder.Encode(22))
-	fmt.Println(encoder.Encode(999))
-	fmt.Println(encoder.Encode(88812))
-	// decoder
-	fmt.Println(encoder.Decode("m"))
-	fmt.Println(encoder.Decode("g7"))
+	s := store.New()
+	h := handlers.New(s)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/shorten", h.Shorten)
+	mux.HandleFunc("/", h.Redirect)
+
+	fmt.Println("Server running on http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", mux))
+
 }
