@@ -30,7 +30,11 @@ func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortCode := h.store.Set(body.URL)
+	shortCode, err := h.store.Set(body.URL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
@@ -41,8 +45,8 @@ func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 	shortCode := r.URL.Path[1:] // remove leading "/"
 
-	longURL, ok := h.store.Get(shortCode)
-	if !ok {
+	longURL, err := h.store.Get(shortCode)
+	if err != nil {
 		http.Error(w, "short URL not found", http.StatusNotFound)
 		return
 	}
