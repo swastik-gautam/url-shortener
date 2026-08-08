@@ -4,13 +4,22 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/swastik-gautam/url-shortener/handlers"
 	"github.com/swastik-gautam/url-shortener/store"
 )
 
 func main() {
-	connStr := "postgres://swastik:swastik@27@localhost:5432/urlshortener"
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, relying on system env vars")
+	}
+
+	connStr := os.Getenv("DATABASE_URL")
+	if connStr == "" {
+		log.Fatal("DATABASE_URL not set")
+	}
 
 	s, err := store.New(connStr)
 	if err != nil {
@@ -18,7 +27,6 @@ func main() {
 	}
 
 	h := handlers.New(s)
-
 	mux := http.NewServeMux()
 	mux.HandleFunc("/shorten", h.Shorten)
 	mux.HandleFunc("/", h.Redirect)
