@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/swastik-gautam/url-shortener/cache"
 	"github.com/swastik-gautam/url-shortener/handlers"
 	"github.com/swastik-gautam/url-shortener/store"
 )
@@ -25,6 +26,8 @@ func main() {
 	if err != nil {
 		log.Fatal("could not connect to database:", err)
 	}
+
+	cache.ConnectRedis()
 
 	h := handlers.New(s)
 	mux := http.NewServeMux()
