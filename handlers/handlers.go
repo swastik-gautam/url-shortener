@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/swastik-gautam/url-shortener/cache"
 	"github.com/swastik-gautam/url-shortener/store"
 )
 
@@ -45,11 +46,19 @@ func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 	shortCode := r.URL.Path[1:] // remove leading "/"
 
-	longURL, err := h.store.Get(shortCode)
-	if err != nil {
-		http.Error(w, "short URL not found", http.StatusNotFound)
+	longURL, found := cache.Get(shortCode)
+	if found {
+		http.Redirect(w, r, longURL, http.StatusFound)
 		return
 	}
+
+	longURL, err := h.store.Get(shortCode)
+	if err != nil {
+		http.Error(w, "short  URL not found", http.StatusNotFound)
+		return
+	}
+
+	cache.Set(shortCode, longURL)
 
 	http.Redirect(w, r, longURL, http.StatusFound)
 }

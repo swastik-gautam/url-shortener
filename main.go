@@ -27,9 +27,11 @@ func main() {
 		log.Fatal("could not connect to database:", err)
 	}
 
+	// just connect to Redis (uses the global RDB)
 	cache.ConnectRedis()
 
-	h := handlers.New(s)
+	h := handlers.New(s) // only pass the store
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/shorten", h.Shorten)
 	mux.HandleFunc("/", h.Redirect)
